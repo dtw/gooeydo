@@ -1,0 +1,91 @@
+#! /bin/bash
+# gooeydo - GUI sudo utility chooser
+
+# Copyright (c) 2007, Philip Dillon-Thiselton & James Rayner
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+#    * Neither the name of Arch Linux nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# If we're somehow root already then just run the command
+[[ $(id -u) == 0 ]] && echo $1
+
+# command to run
+if [ -z "$1" ]; then
+    echo "Usage: gooeydo [command to run as root]"
+else
+    cmd=$1
+fi
+
+# source config if we have one
+[ -f ~/.gooeydo ] && source ~/.gooeydo 
+
+# these are our lovely apps
+su_apps=(gksudo gksu kdesu sudo)
+term_apps=(tilda Eterm aterm mrxvt xterm rxvt urxvt gnome-terminal konsole Terminal roxterm sakura kuake yakuake vte)
+
+check_app() {
+    n=0
+    for app in ${check_app_source[@]} ; do
+        result=$(type -ap $app | sed -n 1p)
+        [ ! -z $result ] && check_app_result[n++]=$result
+    done
+}
+
+terminal_check() {
+    if [ -n "$SUDOTERM" ]; then
+        term=$SUDOTERM
+    elif [ -n "$TERM" ]; then
+        term=$TERM
+    else
+        # check which terms we have
+        check_app_source=("${term_apps[@]}")
+        check_app
+        term_apps=("${check_app_result[@]}")
+        term=${check_app_result[0]}
+    fi
+}
+
+if [ -n "$SUDOAPP" ]; then
+    su_app=$SUDOAPP
+else
+    # check which run as root apps we have
+    check_app_source=("${su_apps[@]}")
+    check_app
+    su_apps=("${check_app_result[@]}")
+    su_app=${check_app_result[0]}
+fi
+
+if [ -z $su_app ]; then
+    terminal_check
+    # exec $term su -c $cmd
+    echo $term su -c $cmd
+elif [ $(basename $su_app) == "sudo" ]; then
+    # check to see if user is using NOPASSWD
+    if [ "$NOPASSWD" == "true" ]; then
+        # exec sudo $cmd
+        echo sudo $cmd
+    else
+        terminal_check
+        # exec $term -e sudo $cmd
+        echo $term -e sudo $cmd
+    fi
+else
+    # exec $su_app $cmd
+    echo $su_app $cmd
+fi

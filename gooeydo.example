@@ -1,0 +1,10 @@
+# Configuration file for gooeydo
+
+# Store a favourite "run as root" app
+SUDOAPP=
+
+# Set a prefered terminal if you use sudo - you can use arguements ;)
+#SUDOTERM=""
+
+# Uncomment if you have sudo access with NOPASSWD
+#NOPASSWD="true"

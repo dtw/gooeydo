@@ -1,0 +1,42 @@
+.TH GOOEYDO 1 "18 July 2007"
+.SH NAME
+gooeydo \- A "run as root" wrapper for freedesktop.org .desktop files
+.SH SYNOPSIS
+.B gooeydo
+[ \fIcommand_to_run_as_root\fP ]
+.SH DESCRIPTION
+.B gooeydo
+gooeydo is a simple shell wrapper that can be used to launch programs with root access.
+.B gooeydo
+can automatically detect most popular GUI "run as root" applications such as
+gksu and kdesu. It can also detect simple command-line tools such as sudo, and the
+terminal application required to run them. Of course, preferred "run as root" applications
+and terminals can be set on a per user basis with a simple configuration file stored in the
+users home directory. An example can be found in /etc/gooeydo.example
+.TP
+.B gooeydo
+depends on the coreutils package and by default will fallback to using
+.B su
+in the event that no other "run as root" applications can be found.
+.TP
+Currently
+.B gooeydo
+can detect the following "run as root" applications:
+gksudo gksu kdesu sudo
+.TP
+.B gooeydo
+can also detect the following terminal programs to launch sudo as necessary.
+tilda Eterm aterm mrxvt xterm rxvt urxvt gnome-terminal konsole Terminal roxterm sakura kuake yakuake vte
+.TP
+Suggested additions to these applications should be addressed as feature requests as outlined below.
+.SH FILES
+.TP
+/usr/bin/gooeydo
+/etc/gooeydo.example
+~/.gooeydo
+.SH BUGS
+Please report bugs and feature requests to dibble@thewrecker.net or iph
+.SH AUTHORS
+.nf
+Phil Dillon-Thiselton <dibble@thewrecker.net>
+James Rayner <iph>
